@@ -28,7 +28,7 @@ global.describe = function(label, func) {
   func();
 };
 
-global.todo = function({ given, should }) {
+global.todo = function({ given, should } = {}) {
   if (typeof given !== 'string') {
     throw new Error(
       `Expected 'given' to be of type 'string' but received ${typeof given}`,
@@ -57,7 +57,7 @@ global.assert = function({
   actual,
   expected,
   assertion,
-}) {
+} = {}) {
   if (typeof attempts !== 'number') {
     throw new Error(
       `Expected 'attempts' to be of type 'number' but received ${typeof attempts}`,
@@ -180,7 +180,7 @@ global.fuzzy = {
   },
 
   string: function({
-    minLength = Number.MIN_SAFE_INTEGER,
+    minLength = 0,
     maxLength = Number.MAX_SAFE_INTEGER,
     prefix = '',
     suffix = '',
@@ -267,39 +267,39 @@ global.fuzzy = {
     };
   },
 
-  arrayOf: function(valuesOf, lengthMin = 0, lengthMax = 100000) {
+  arrayOf: function(valuesOf, minLength = 0, maxLength = 100000) {
     if (typeof valuesOf !== 'function') {
       throw new Error(
         `Expected 'valuesOf' to be of type 'function' but received ${typeof valuesOf}`,
       );
     }
 
-    if (typeof lengthMin !== 'number') {
+    if (typeof minLength !== 'number') {
       throw new Error(
-        `Expected 'lengthMin' to be of type 'number' but received ${typeof lengthMin}`,
+        `Expected 'minLength' to be of type 'number' but received ${typeof minLength}`,
       );
     }
 
-    if (lengthMin < 0) {
+    if (minLength < 0) {
       throw new Error(
-        `Expected 'lengthMin' to be at least 0 but received ${lengthMin}`,
+        `Expected 'minLength' to be at least 0 but received ${minLength}`,
       );
     }
 
-    if (typeof lengthMax !== 'number') {
+    if (typeof maxLength !== 'number') {
       throw new Error(
-        `Expected 'lengthMax' to be of type 'number' but received ${typeof lengthMax}`,
+        `Expected 'maxLength' to be of type 'number' but received ${typeof maxLength}`,
       );
     }
 
-    if (lengthMax > MAX_ARRAY_LENGTH) {
+    if (maxLength > MAX_ARRAY_LENGTH) {
       throw new Error(
-        `Expected 'lengthMax' to be no greater than ${MAX_ARRAY_LENGTH} but received ${lengthMax}`,
+        `Expected 'maxLength' to be no greater than ${MAX_ARRAY_LENGTH} but received ${maxLength}`,
       );
     }
 
     return () => {
-      const arrayLength = randomInt(lengthMin, lengthMax);
+      const arrayLength = randomInt(minLength, maxLength);
       const array = new Array(arrayLength);
 
       array.fill(null);
@@ -314,7 +314,7 @@ global.fuzzy = {
     minKeys = 0,
     maxKeys = Number.MAX_SAFE_INTEGER,
     requiredKeys = {},
-  }) {
+  } = {}) {
     return () => {
       // TODO
       return {};
