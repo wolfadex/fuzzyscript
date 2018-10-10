@@ -2,6 +2,8 @@ const workerpool = require('workerpool');
 const chalk = require('chalk');
 const glob = require('glob');
 
+process.stdout.write('\x1b[2J'); // Clear screen
+process.stdout.write('\x1b[0f');
 console.log(chalk('Gathering tests'));
 
 const isProduction = process.env.NDOE_ENV === 'production';

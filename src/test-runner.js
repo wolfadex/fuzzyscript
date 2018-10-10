@@ -8,16 +8,16 @@ const randomInt = (min, max) => Math.floor(random(min, max));
 
 const results = [];
 
-global.describe = function(label, func) {
+global.describe = function(label, callback) {
   if (typeof label !== 'string') {
     throw new Error(
       `Expected 'label' to be of type 'string' but received ${typeof label}`,
     );
   }
 
-  if (typeof func !== 'function') {
+  if (typeof callback !== 'function') {
     throw new Error(
-      `Expected 'func' to be of type 'function' but received ${typeof func}`,
+      `Expected 'callback' to be of type 'function' but received ${typeof callback}`,
     );
   }
 
@@ -25,7 +25,7 @@ global.describe = function(label, func) {
     type: 'DESCRIBE',
     payload: label,
   });
-  func();
+  callback();
 };
 
 global.todo = function({ given, should } = {}) {
@@ -152,6 +152,10 @@ With error: ${error}`,
 };
 
 global.fuzzy = {
+  exact: function(item) {
+    return () => item;
+  },
+
   number: function(
     min = Number.MIN_SAFE_INTEGER,
     max = Number.MAX_SAFE_INTEGER,
@@ -181,7 +185,7 @@ global.fuzzy = {
 
   string: function({
     minLength = 0,
-    maxLength = Number.MAX_SAFE_INTEGER,
+    maxLength = 100000,
     prefix = '',
     suffix = '',
   } = {}) {
@@ -209,6 +213,18 @@ global.fuzzy = {
       );
     }
 
+    if (minLength < 0) {
+      throw new Error(
+        `Expected 'minLength' to be at least 0 but found ${minLength}`,
+      );
+    }
+
+    if (maxLength > MAX_ARRAY_LENGTH) {
+      throw new Error(
+        `Expected 'maxLength' to be no more than ${MAX_ARRAY_LENGTH} but got ${maxLength}`,
+      );
+    }
+
     if (typeof prefix !== 'string') {
       throw new Error(
         `Expected 'prefix' to be of type 'string' but received ${typeof prefix}`,
@@ -220,8 +236,16 @@ global.fuzzy = {
         `Expected 'suffix' to be of type 'string' but received ${typeof suffix}`,
       );
     }
-    // TODO
-    return () => `${prefix}${suffix}`;
+
+    const emptyString = new Array(maxLength);
+
+    emptyString.fill(null);
+
+    const randomChars = emptyString
+      .map(() => String.fromCharCode(randomInt(32, 255)))
+      .join('');
+
+    return () => `${prefix}${randomChars}${suffix}`;
   },
 
   null: function() {
@@ -233,20 +257,24 @@ global.fuzzy = {
   },
 
   boolean: function() {
+    return () => Math.random() < 0.5;
+  },
+
+  symbol: function(symbolOf) {
     return () => {
-      // TODO
-      return false;
+      if (symbolOf === undefined) {
+        return Symbol();
+      }
+
+      if (typeof symbolOf === 'function') {
+        return Symbol(symbolOf());
+      }
+
+      return Symbol(symbolOf);
     };
   },
 
-  symbol: function() {
-    return () => {
-      // TODO
-      return new Symbol();
-    };
-  },
-
-  date: function({ before, after, asString = false, format }) {
+  date: function({ before, after, asString = false, format } = {}) {
     return () => {
       // TODO
       return new Date();
